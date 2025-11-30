@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { SearchResult, UniversityData, SavedUniversity } from './types';
 import { searchGemini } from './services/geminiService';
+import { supabase } from './supabaseClient';
 import { UniversityView } from './components/UniversityView';
 import { Icons } from './components/Icons';
 
@@ -18,7 +19,10 @@ function App() {
   const [data, setData] = useState<SearchResult>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  
+  // Saved List State
   const [savedList, setSavedList] = useState<SavedUniversity[]>([]);
+  const [loadingSaved, setLoadingSaved] = useState(false);
 
   // Search State
   const [uniSearch, setUniSearch] = useState({
@@ -27,13 +31,40 @@ function App() {
     discipline: 'Computer Science'
   });
 
-  // Load saved data on mount
+  // Load saved data on mount from Supabase
   useEffect(() => {
-    const saved = localStorage.getItem('infoSchoolDB');
-    if (saved) {
-        setSavedList(JSON.parse(saved));
-    }
+    fetchSavedUniversities();
   }, []);
+
+  const fetchSavedUniversities = async () => {
+    if (!supabase) return; // Guard clause if DB is not configured
+
+    setLoadingSaved(true);
+    try {
+        const { data: records, error } = await supabase
+            .from('saved_universities')
+            .select('*')
+            .order('created_at', { ascending: false });
+        
+        if (error) throw error;
+
+        if (records) {
+            const formatted: SavedUniversity[] = records.map(record => ({
+                id: record.id,
+                university: record.university_data,
+                userNotes: record.user_notes,
+                searchLevel: record.search_level,
+                searchDiscipline: record.search_discipline,
+                savedAt: new Date(record.created_at).toLocaleDateString()
+            }));
+            setSavedList(formatted);
+        }
+    } catch (err) {
+        console.error('Error fetching saved universities:', err);
+    } finally {
+        setLoadingSaved(false);
+    }
+  };
 
   const handleSearch = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -58,25 +89,59 @@ function App() {
     }
   };
 
-  const handleSave = (notes: string) => {
-      if (!data) return;
-      const newEntry: SavedUniversity = {
-          ...data,
-          id: Date.now().toString(),
-          savedAt: new Date().toLocaleDateString(),
-          userNotes: notes,
-          searchLevel: uniSearch.level,
-          searchDiscipline: uniSearch.discipline
-      };
-      const updatedList = [newEntry, ...savedList];
-      setSavedList(updatedList);
-      localStorage.setItem('infoSchoolDB', JSON.stringify(updatedList));
+  const handleSave = async (notes: string) => {
+      if (!data || !data.university) return;
+      
+      if (!supabase) {
+        alert("Database connection is not configured (Supabase URL/Key missing). Cannot save.");
+        return;
+      }
+
+      try {
+          const { error } = await supabase
+              .from('saved_universities')
+              .insert([
+                  { 
+                      university_data: data.university,
+                      user_notes: notes,
+                      search_level: uniSearch.level,
+                      search_discipline: uniSearch.discipline
+                  }
+              ]);
+
+          if (error) throw error;
+
+          // Refresh list
+          fetchSavedUniversities();
+          alert("University saved to database!");
+      } catch (err) {
+          console.error('Error saving university:', err);
+          alert("Failed to save to database.");
+      }
   };
 
-  const handleDelete = (id: string) => {
-      const updatedList = savedList.filter(item => item.id !== id);
-      setSavedList(updatedList);
-      localStorage.setItem('infoSchoolDB', JSON.stringify(updatedList));
+  const handleDelete = async (id: string) => {
+      if (!window.confirm("Are you sure you want to delete this record?")) return;
+      
+      if (!supabase) {
+         alert("Database connection is not configured.");
+         return;
+      }
+
+      try {
+          const { error } = await supabase
+              .from('saved_universities')
+              .delete()
+              .eq('id', id);
+          
+          if (error) throw error;
+
+          // Optimistic update or refresh
+          setSavedList(prev => prev.filter(item => item.id !== id));
+      } catch (err) {
+          console.error('Error deleting record:', err);
+          alert("Failed to delete record.");
+      }
   };
 
   const [expandedId, setExpandedId] = useState<string | null>(null);
@@ -229,10 +294,23 @@ function App() {
                         <h2 className="text-xl font-bold text-white flex items-center gap-2">
                             <Icons.Table className="text-blue-500" /> Saved University Database
                         </h2>
-                        <span className="text-xs text-slate-500 bg-slate-800 px-3 py-1 rounded-full">{savedList.length} records</span>
+                        <span className="text-xs text-slate-500 bg-slate-800 px-3 py-1 rounded-full">
+                            {loadingSaved ? "..." : savedList.length} records
+                        </span>
                     </div>
                     
-                    {savedList.length === 0 ? (
+                    {!supabase && (
+                        <div className="p-4 bg-yellow-900/20 text-yellow-500 text-center text-sm border-b border-yellow-500/10">
+                            Database connection not configured. Please set SUPABASE_URL and SUPABASE_KEY.
+                        </div>
+                    )}
+
+                    {loadingSaved ? (
+                         <div className="p-12 text-center text-slate-500">
+                            <div className="w-8 h-8 border-2 border-slate-600 border-t-blue-500 rounded-full animate-spin mx-auto mb-4"></div>
+                            <p>Loading your database...</p>
+                         </div>
+                    ) : savedList.length === 0 ? (
                         <div className="p-12 text-center text-slate-500">
                             <Icons.Table className="w-12 h-12 mx-auto mb-4 opacity-20" />
                             <p>No saved records found. Search and save universities to build your database.</p>

@@ -1,10 +1,9 @@
-
 import React, { useState } from 'react';
-import { UniversityData } from '../types';
+import { UniversityData, SavedUniversity } from '../types';
 import { Icons } from './Icons';
 
 interface Props {
-  data: UniversityData;
+  data: UniversityData | SavedUniversity;
   onSave?: (notes: string) => void;
   isSavedMode?: boolean;
   searchContext?: {
@@ -311,12 +310,12 @@ export const UniversityView: React.FC<Props> = ({ data, onSave, isSavedMode = fa
           </div>
       )}
       
-      {isSavedMode && data.userNotes && (
+      {isSavedMode && (data as SavedUniversity).userNotes && (
          <div className="bg-yellow-900/10 border border-yellow-500/20 p-4 rounded-xl">
              <h4 className="text-yellow-500 text-xs font-bold uppercase tracking-widest mb-2 flex items-center gap-2">
                  <Icons.StickyNote className="w-4 h-4"/> Saved Notes
              </h4>
-             <p className="text-slate-300 text-sm whitespace-pre-wrap">{data.userNotes}</p>
+             <p className="text-slate-300 text-sm whitespace-pre-wrap">{(data as SavedUniversity).userNotes}</p>
          </div>
       )}
 
