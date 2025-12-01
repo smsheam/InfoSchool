@@ -24,7 +24,9 @@ import {
   StickyNote,
   Twitter,
   Check,
-  Hash
+  Hash,
+  ThumbsUp,
+  ThumbsDown
 } from 'lucide-react';
 
 export const Icons = {
@@ -53,5 +55,7 @@ export const Icons = {
   StickyNote,
   Twitter,
   Check,
-  Hash
+  Hash,
+  ThumbsUp,
+  ThumbsDown
 };

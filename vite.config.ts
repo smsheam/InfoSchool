@@ -13,9 +13,8 @@ export default defineConfig(({ mode }) => {
       // This is critical to allow "process.env.API_KEY" to work in the browser code
       // as required by the application structure.
       'process.env.API_KEY': JSON.stringify(env.API_KEY),
-      // Expose Supabase keys. Checks for standard or VITE_ prefixed variables.
-      'process.env.SUPABASE_URL': JSON.stringify(env.SUPABASE_URL || env.VITE_SUPABASE_URL),
-      'process.env.SUPABASE_KEY': JSON.stringify(env.SUPABASE_KEY || env.VITE_SUPABASE_KEY),
+      'process.env.SUPABASE_URL': JSON.stringify(env.SUPABASE_URL),
+      'process.env.SUPABASE_KEY': JSON.stringify(env.SUPABASE_KEY),
     },
   };
 });

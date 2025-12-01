@@ -1,11 +1,9 @@
-import React, { useState } from 'react';
-import { UniversityData, SavedUniversity } from '../types';
+import React from 'react';
+import { UniversityData } from '../types';
 import { Icons } from './Icons';
 
 interface Props {
-  data: UniversityData | SavedUniversity;
-  onSave?: (notes: string) => void;
-  isSavedMode?: boolean;
+  data: UniversityData;
   searchContext?: {
     discipline: string;
     level: string;
@@ -43,10 +41,8 @@ const DetailRow = ({ label, value }: { label: string, value: string }) => (
   </div>
 );
 
-export const UniversityView: React.FC<Props> = ({ data, onSave, isSavedMode = false, searchContext }) => {
+export const UniversityView: React.FC<Props> = ({ data, searchContext }) => {
   const { university } = data;
-  const [notes, setNotes] = useState('');
-  const [saved, setSaved] = useState(false);
 
   if (!university) return null;
 
@@ -55,13 +51,6 @@ export const UniversityView: React.FC<Props> = ({ data, onSave, isSavedMode = fa
 
   const getGoogleSearchUrl = (query: string) => `https://www.google.com/search?q=${encodeURIComponent(query)}`;
   const getLinkedInSearchUrl = (query: string) => `https://www.linkedin.com/search/results/all/?keywords=${encodeURIComponent(query)}`;
-
-  const handleSave = () => {
-    if (onSave) {
-      onSave(notes);
-      setSaved(true);
-    }
-  };
 
   // Helper for Social Media styling
   const getSocialStyle = (source: string) => {
@@ -277,47 +266,6 @@ export const UniversityView: React.FC<Props> = ({ data, onSave, isSavedMode = fa
               )}
           </div>
       </div>
-
-      {/* Action Footer (Save & Notes) */}
-      {!isSavedMode && (
-          <div className="bg-slate-900/50 rounded-3xl p-6 border border-slate-800 shadow-inner">
-            <div className="flex flex-col md:flex-row gap-4 items-start">
-                <div className="flex-grow w-full">
-                    <label className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-2 flex items-center gap-2">
-                        <Icons.StickyNote className="w-4 h-4"/> Personal Notes
-                    </label>
-                    <textarea 
-                        className="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-sm text-slate-300 focus:border-blue-500/50 focus:outline-none transition-colors min-h-[80px]"
-                        placeholder="Add notes about professors, deadlines, or questions to ask..."
-                        value={notes}
-                        onChange={(e) => setNotes(e.target.value)}
-                    />
-                </div>
-                <div className="md:self-end">
-                    <button 
-                        onClick={handleSave}
-                        disabled={saved}
-                        className={`flex items-center gap-2 px-6 py-3 rounded-xl font-bold text-sm transition-all shadow-lg ${
-                            saved 
-                            ? "bg-green-600/20 text-green-400 border border-green-500/30 cursor-default"
-                            : "bg-blue-600 text-white hover:bg-blue-500 shadow-blue-900/30"
-                        }`}
-                    >
-                        {saved ? <><Icons.Check className="w-4 h-4"/> Saved to Database</> : <><Icons.Save className="w-4 h-4"/> Save Result</>}
-                    </button>
-                </div>
-            </div>
-          </div>
-      )}
-      
-      {isSavedMode && (data as SavedUniversity).userNotes && (
-         <div className="bg-yellow-900/10 border border-yellow-500/20 p-4 rounded-xl">
-             <h4 className="text-yellow-500 text-xs font-bold uppercase tracking-widest mb-2 flex items-center gap-2">
-                 <Icons.StickyNote className="w-4 h-4"/> Saved Notes
-             </h4>
-             <p className="text-slate-300 text-sm whitespace-pre-wrap">{(data as SavedUniversity).userNotes}</p>
-         </div>
-      )}
 
     </div>
   );

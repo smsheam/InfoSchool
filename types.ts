@@ -54,14 +54,6 @@ export interface UniversityData {
   };
 }
 
-export interface SavedUniversity extends UniversityData {
-  id: string;
-  savedAt: string;
-  userNotes: string;
-  searchLevel: string;
-  searchDiscipline: string;
-}
-
 export interface Professor {
   name: string;
   designation: string;
