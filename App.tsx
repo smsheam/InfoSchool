@@ -172,13 +172,16 @@ function App() {
       setFeedbackStatus('sending');
       
       try {
+          // Construct message with context since 'search_context' column might not exist in simplified schema
+          const contextStr = mode === 'search' ? `${uniSearch.name} - ${uniSearch.level}` : `Profile Analysis (${profile.major})`;
+          const fullMessage = `[Context: ${contextStr}] ${feedbackText}`;
+
           const { error } = await supabase
               .from('feedbacks')
               .insert([
                   { 
-                      message: feedbackText, 
-                      is_helpful: isHelpful,
-                      search_context: mode === 'search' ? `${uniSearch.name} - ${uniSearch.level}` : `Profile Analysis (${profile.major})` 
+                      message: fullMessage, 
+                      is_helpful: isHelpful
                   }
               ]);
 
