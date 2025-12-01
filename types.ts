@@ -54,6 +54,31 @@ export interface UniversityData {
   };
 }
 
+export interface StudentProfile {
+  cgpa: string;
+  gre: string;
+  toefl: string;
+  publications: string;
+  major: string;
+  interest: string;
+}
+
+export interface RecommendedUni {
+  name: string;
+  location: string;
+  reason: string;
+  chance: string; // e.g. "20%", "High", "Low"
+}
+
+export interface RecommendationResult {
+  analysis: string; // Brief analysis of the profile
+  recommendations: {
+    ambitious: RecommendedUni[];
+    target: RecommendedUni[];
+    safe: RecommendedUni[];
+  };
+}
+
 export interface Professor {
   name: string;
   designation: string;

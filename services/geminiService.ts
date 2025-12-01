@@ -1,5 +1,6 @@
 
 import { GoogleGenAI } from "@google/genai";
+import { StudentProfile } from "../types";
 
 const SYSTEM_INSTRUCTION = `
 You are the backend engine of "InfoSchool", a Graduate Study Search App.
@@ -104,6 +105,34 @@ No text outside the JSON object.
 Keep field names identical to schema.
 `;
 
+const RECOMMENDATION_SYSTEM_INSTRUCTION = `
+You are an expert Graduate Admission Counselor AI.
+Your task is to analyze a student's profile (CGPA, GRE, TOEFL, Publications) and recommend US universities.
+Classify recommendations into 3 categories: 
+1. Ambitious (Reach schools, < 20% chance)
+2. Target (Match schools, 40-60% chance)
+3. Safe (Safety schools, > 80% chance)
+
+Input provided will be: Major, Interest, CGPA, GRE, TOEFL, Papers.
+
+Respond strictly in this JSON format:
+{
+  "analysis": "A brief 2-sentence summary of the profile strengths/weaknesses.",
+  "recommendations": {
+    "ambitious": [
+      { "name": "University Name", "location": "City, State", "reason": "Why it is ambitious (e.g. Low GPA for top 10)", "chance": "15%" }
+    ],
+    "target": [
+      { "name": "University Name", "location": "City, State", "reason": "Why it is a match", "chance": "50%" }
+    ],
+    "safe": [
+      { "name": "University Name", "location": "City, State", "reason": "Why it is safe", "chance": "90%" }
+    ]
+  }
+}
+Provide exactly 3 universities per category.
+`;
+
 export const searchGemini = async (query: string): Promise<any> => {
   try {
     const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
@@ -137,3 +166,39 @@ export const searchGemini = async (query: string): Promise<any> => {
     throw error;
   }
 };
+
+export const getStudentRecommendations = async (profile: StudentProfile): Promise<any> => {
+    try {
+        const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+
+        const prompt = `
+          Student Profile:
+          Major: ${profile.major}
+          Research Interest: ${profile.interest}
+          CGPA: ${profile.cgpa}
+          GRE: ${profile.gre}
+          TOEFL: ${profile.toefl}
+          Publications/Papers: ${profile.publications}
+          
+          Recommend universities for Graduate Studies (PhD/Masters) in the US.
+        `;
+
+        const response = await ai.models.generateContent({
+            model: 'gemini-2.5-flash',
+            contents: prompt,
+            config: {
+                systemInstruction: RECOMMENDATION_SYSTEM_INSTRUCTION,
+                responseMimeType: "application/json",
+                temperature: 0.5,
+            },
+        });
+
+        const text = response.text;
+        if (!text) throw new Error("No response from AI");
+        return JSON.parse(text);
+
+    } catch (error) {
+        console.error("Recommendation Error:", error);
+        throw error;
+    }
+}

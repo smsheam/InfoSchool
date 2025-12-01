@@ -26,7 +26,13 @@ import {
   Check,
   Hash,
   ThumbsUp,
-  ThumbsDown
+  ThumbsDown,
+  Calculator,
+  Target,
+  Zap,
+  ShieldCheck,
+  BrainCircuit,
+  Send
 } from 'lucide-react';
 
 export const Icons = {
@@ -57,5 +63,11 @@ export const Icons = {
   Check,
   Hash,
   ThumbsUp,
-  ThumbsDown
+  ThumbsDown,
+  Calculator,
+  Target,
+  Zap,
+  Shield: ShieldCheck,
+  Brain: BrainCircuit,
+  Send
 };
