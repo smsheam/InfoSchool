@@ -210,14 +210,6 @@ function App() {
                 <p className="text-xs text-slate-500 font-medium">Comprehensive University Details by <span className="text-slate-300">S.M. Sheam</span></p>
               </div>
             </div>
-
-            <div className="flex items-center gap-2 bg-slate-800/50 p-2 rounded-xl border border-slate-700/50 text-xs text-slate-400">
-                 <div className={`w-2 h-2 rounded-full ${dbConnected ? 'bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.6)]' : 'bg-red-500'}`}></div>
-                 <span>Visits:</span>
-                 <span className="bg-slate-900 text-blue-400 px-2 py-0.5 rounded font-mono font-bold">
-                    {visitorCount.toLocaleString()}
-                 </span>
-            </div>
           </div>
         </div>
       </header>
@@ -231,13 +223,7 @@ function App() {
                      <Icons.GraduationCap className="w-12 h-12 text-blue-500" />
                  </div>
                  <h2 className="text-3xl font-bold text-white mb-2">Welcome to InfoSchool</h2>
-                 <p className="text-slate-400 mb-6">Graduate Admissions AI & Profile Evaluator</p>
-                 <div className="inline-flex items-center gap-3 text-sm bg-slate-900 px-4 py-2 rounded-full border border-slate-800">
-                     <span className="text-slate-500">Developed by</span>
-                     <span className="font-semibold text-blue-400">S.M. Sheam, B.Sc. (BUET)</span>
-                     <span className="w-1 h-1 bg-slate-700 rounded-full"></span>
-                     <a href="https://sites.google.com/view/samiunmuntasirsheam" target="_blank" rel="noreferrer" className="text-slate-400 hover:text-white underline decoration-slate-600 underline-offset-2">Visit Website</a>
-                 </div>
+                 <p className="text-slate-400 mb-6">AI Powered Graduate Admissions & Profile Evaluator Tools</p>
              </div>
         )}
 
@@ -460,15 +446,22 @@ function App() {
 
       </main>
 
-      <footer className="fixed bottom-0 w-full bg-slate-900/90 backdrop-blur border-t border-slate-800 py-3 z-10">
-          <div className="flex flex-col md:flex-row items-center justify-center gap-2 text-xs text-slate-500">
-             <p>Developed by <span className="text-slate-300 font-medium tracking-wide">S.M. SHEAM</span></p>
-             <span className="hidden md:inline text-slate-700">|</span>
-             <p>InfoSchool AI Engine</p>
-             <span className="hidden md:inline text-slate-700">|</span>
-             <p className={dbConnected ? "text-green-500/70" : "text-red-500/70"}>
-                {dbConnected ? "● Live Database" : "○ Offline Mode"}
-             </p>
+      <footer className="fixed bottom-0 w-full bg-slate-900/90 backdrop-blur border-t border-slate-800 py-3 z-10 shadow-[0_-5px_15px_rgba(0,0,0,0.3)]">
+          <div className="max-w-6xl mx-auto px-4 flex flex-col md:flex-row items-center justify-between gap-4 text-xs text-slate-500">
+             <div className="flex items-center gap-2">
+                 <span>Developed by</span>
+                 <a href="https://sites.google.com/view/samiunmuntasirsheam" target="_blank" rel="noreferrer" className="font-semibold text-blue-400 hover:text-blue-300 transition-colors">
+                    S.M. Sheam, B.Sc. (BUET)
+                 </a>
+             </div>
+             
+             <div className="flex items-center gap-2 bg-slate-800/50 px-3 py-1.5 rounded-full border border-slate-700/50">
+                 <div className={`w-2 h-2 rounded-full ${dbConnected ? 'bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.6)]' : 'bg-red-500'}`}></div>
+                 <span>Visits:</span>
+                 <span className="text-slate-200 font-mono font-bold">
+                    {visitorCount.toLocaleString()}
+                 </span>
+            </div>
           </div>
       </footer>
 
