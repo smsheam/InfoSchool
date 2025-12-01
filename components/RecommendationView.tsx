@@ -13,12 +13,10 @@ interface UniCardProps {
 
 const UniCard: React.FC<UniCardProps> = ({ uni, type }) => {
     const styles = {
-        ambitious: { border: 'border-purple-500/30', bg: 'bg-purple-900/10', text: 'text-purple-400', icon: Icons.Zap, label: 'Ambitious' },
-        target: { border: 'border-blue-500/30', bg: 'bg-blue-900/10', text: 'text-blue-400', icon: Icons.Target, label: 'Target' },
-        safe: { border: 'border-emerald-500/30', bg: 'bg-emerald-900/10', text: 'text-emerald-400', icon: Icons.Shield, label: 'Safe' }
+        ambitious: { border: 'border-purple-500/30', bg: 'bg-purple-900/10', text: 'text-purple-400', label: 'Ambitious' },
+        target: { border: 'border-blue-500/30', bg: 'bg-blue-900/10', text: 'text-blue-400', label: 'Target' },
+        safe: { border: 'border-emerald-500/30', bg: 'bg-emerald-900/10', text: 'text-emerald-400', label: 'Safe' }
     }[type];
-
-    const Icon = styles.icon;
 
     return (
         <div className={`p-4 rounded-xl border ${styles.border} ${styles.bg} hover:border-opacity-100 transition-all group`}>
