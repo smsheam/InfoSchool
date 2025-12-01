@@ -26,6 +26,7 @@ function App() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [visitorCount, setVisitorCount] = useState<number>(0);
+  const [dbConnected, setDbConnected] = useState<boolean>(!!supabase);
 
   // Feedback State
   const [feedbackText, setFeedbackText] = useState("");
@@ -54,15 +55,17 @@ function App() {
     const updateVisitorCount = async () => {
       // If Supabase isn't connected, fallback to local simulation
       if (!supabase) {
+        setDbConnected(false);
         const storedVisits = localStorage.getItem('infoSchool_visits');
         let count = storedVisits ? parseInt(storedVisits, 10) : 0;
         count += 1;
         localStorage.setItem('infoSchool_visits', count.toString());
-        setVisitorCount(count); // Display raw count
+        setVisitorCount(count); 
         return;
       }
 
       try {
+        setDbConnected(true);
         // 1. Get current count (row ID 1)
         const { data: stats, error: fetchError } = await supabase
           .from('site_stats')
@@ -70,35 +73,33 @@ function App() {
           .eq('id', 1)
           .single();
 
-        let currentCount = 0;
-
-        if (fetchError && fetchError.code === 'PGRST116') {
-             // Row doesn't exist, start from 0 (we will insert on update)
-             currentCount = 0;
+        if (fetchError) {
+             console.warn("Error fetching stats, defaulting to local fallback", fetchError);
+             // If table doesn't exist or RLS issue, keep basic count
+             setVisitorCount(1);
         } else if (stats) {
-             currentCount = stats.count;
+             let currentCount = stats.count;
+
+             // 2. Increment if this is a new session
+             const sessionVisit = sessionStorage.getItem('infoSchool_session_visit');
+             if (!sessionVisit) {
+               const newCount = currentCount + 1;
+               
+               // Upsert logic (Insert if not exists, Update if exists)
+               const { error: upsertError } = await supabase
+                 .from('site_stats')
+                 .upsert({ id: 1, count: newCount });
+     
+               if (!upsertError) {
+                 currentCount = newCount;
+                 sessionStorage.setItem('infoSchool_session_visit', 'true');
+               }
+             }
+             setVisitorCount(currentCount);
         }
-
-        // 2. Increment if this is a new session
-        const sessionVisit = sessionStorage.getItem('infoSchool_session_visit');
-        if (!sessionVisit) {
-          const newCount = currentCount + 1;
-          
-          // Upsert logic (Insert if not exists, Update if exists)
-          const { error: upsertError } = await supabase
-            .from('site_stats')
-            .upsert({ id: 1, count: newCount });
-
-          if (!upsertError) {
-            currentCount = newCount;
-            sessionStorage.setItem('infoSchool_session_visit', 'true');
-          }
-        }
-
-        setVisitorCount(currentCount);
-
       } catch (err) {
         console.error("Error updating visitor count:", err);
+        setDbConnected(false);
       }
     };
 
@@ -208,7 +209,8 @@ function App() {
             </div>
 
             <div className="flex items-center gap-2 bg-slate-800/50 p-2 rounded-xl border border-slate-700/50 text-xs text-slate-400">
-                 <span>Total Site Visits:</span>
+                 <div className={`w-2 h-2 rounded-full ${dbConnected ? 'bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.6)]' : 'bg-red-500'}`}></div>
+                 <span>Visits:</span>
                  <span className="bg-slate-900 text-blue-400 px-2 py-0.5 rounded font-mono font-bold">
                     {visitorCount.toLocaleString()}
                  </span>
@@ -455,11 +457,15 @@ function App() {
 
       </main>
 
-      <footer className="fixed bottom-0 w-full bg-slate-950/90 backdrop-blur border-t border-slate-800 py-3 z-10">
+      <footer className="fixed bottom-0 w-full bg-slate-900/90 backdrop-blur border-t border-slate-800 py-3 z-10">
           <div className="flex flex-col md:flex-row items-center justify-center gap-2 text-xs text-slate-500">
              <p>Developed by <span className="text-slate-300 font-medium tracking-wide">S.M. SHEAM</span></p>
              <span className="hidden md:inline text-slate-700">|</span>
              <p>InfoSchool AI Engine</p>
+             <span className="hidden md:inline text-slate-700">|</span>
+             <p className={dbConnected ? "text-green-500/70" : "text-red-500/70"}>
+                {dbConnected ? "● Live Database" : "○ Offline Mode"}
+             </p>
           </div>
       </footer>
 
